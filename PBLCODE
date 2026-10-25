@@ -1,0 +1,23 @@
+#include <PZEM004Tv30.h>   // PZEM-004T v3 library (check name/version)
+PZEM004Tv30 pzem(Serial2, 16, 17);   // ESP32 RX2=16, TX2=17
+ 
+void setup() { Serial.begin(115200); }
+ 
+void loop() {
+  float v = pzem.voltage();     // volts
+  float i = pzem.current();     // amps
+  float p = pzem.power();       // watts
+  float e = pzem.energy();      // kWh (kept by the module)
+  if (isnan(v) || isnan(i)) {   // no reply from module
+    Serial.println("Read error");
+    delay(2000);
+    return;
+  }
+  bool H = p > 1500;            // overload limit in W [change]
+  bool T = true;                // peak hour flag [replace with time check]
+  bool F = false;               // sensor fault flag
+  bool B = (H && T) || F;       // alert logic from Module 1
+  Serial.printf("V=%.1f I=%.3f P=%.1f E=%.3f B=%d\n", v, i, p, e, B);
+  delay(1000);
+}
+// Note: not yet tested on our hardware. Wi-Fi upload code to be added.
